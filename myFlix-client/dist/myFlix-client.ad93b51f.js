@@ -160,11 +160,11 @@
       });
     }
   }
-})({"2b3Zh":[function(require,module,exports,__globalThis) {
+})({"efAA2":[function(require,module,exports,__globalThis) {
 var global = arguments[3];
 var HMR_HOST = null;
 var HMR_PORT = null;
-var HMR_SERVER_PORT = 54746;
+var HMR_SERVER_PORT = 63900;
 var HMR_SECURE = false;
 var HMR_ENV_HASH = "439701173a9199ea";
 var HMR_USE_SSE = false;
@@ -27452,6 +27452,6 @@ $RefreshReg$(_c, "MovieView");
   globalThis.$RefreshReg$ = prevRefreshReg;
   globalThis.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"lJZlQ":[function() {},{}]},["2b3Zh","gYcKb"], "gYcKb", "parcelRequireaec4", {}, null, null, "http://localhost:54746")
+},{"react/jsx-dev-runtime":"dVPUn","react":"jMk1U","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"7h6Pi"}],"lJZlQ":[function() {},{}]},["efAA2","gYcKb"], "gYcKb", "parcelRequireaec4", {}, null, null, "http://localhost:63900")
 
 //# sourceMappingURL=myFlix-client.ad93b51f.js.map
