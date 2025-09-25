@@ -1,68 +1,50 @@
 import React, { useState, useEffect } from "react";
+import { Container, Row, Col, Button } from "react-bootstrap";
 import { MovieCard } from "../movie-card/movie-card";
 import { MovieView } from "../movie-view/movie-view";
-import { LoginView } from "../login-view/login-view";
-import { SignupView } from "../signup-view/signup-view";
 
 export const MainView = () => {
-  const storedToken = localStorage.getItem("token");
-  const storedUser = localStorage.getItem("user");
-
-  const [user, setUser] = useState(storedUser ? JSON.parse(storedUser) : null);
-  const [token, setToken] = useState(storedToken || null);
+  const [movies, setMovies] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
-  const [showSignup, setShowSignup] = useState(false);
 
-  const [movies, setMovies] = useState([
-    { id: 1, title: "Inception", description: "A mind-bending thriller about dreams within dreams." },
-    { id: 2, title: "Interstellar", description: "A space exploration epic to save humanity." },
-    { id: 3, title: "The Matrix", description: "A hacker discovers the world is a simulation." }
-  ]);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
 
-  const handleLogout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.clear();
-  };
-
-  const handleLogin = (user, token) => {
-    setUser(user);
-    setToken(token);
-    localStorage.setItem("user", JSON.stringify(user));
-    localStorage.setItem("token", token);
-  };
-
-  if (!user) {
-    return showSignup ? (
-      <SignupView onBackToLogin={() => setShowSignup(false)} />
-    ) : (
-      <>
-        <LoginView onLoggedIn={handleLogin} />
-        <button onClick={() => setShowSignup(true)}>Create Account</button>
-      </>
-    );
-  }
+    fetch("https://your-api-url.com/movies", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then((res) => res.json())
+      .then((data) => setMovies(data))
+      .catch((err) => console.error("Error fetching movies:", err));
+  }, []);
 
   if (selectedMovie) {
     return (
-      <MovieView
-        movie={selectedMovie}
-        onBackClick={() => setSelectedMovie(null)}
-      />
+      <Container className="mt-4">
+        <MovieView
+          movie={selectedMovie}
+          onBackClick={() => setSelectedMovie(null)}
+        />
+      </Container>
     );
   }
 
   return (
-    <div>
-      <h2>Welcome, {user.username}</h2>
-      <button onClick={handleLogout}>Logout</button>
-      {movies.map((movie) => (
-        <MovieCard
-          key={movie.id}
-          movie={movie}
-          onMovieClick={() => setSelectedMovie(movie)}
-        />
-      ))}
-    </div>
+    <Container className="mt-4">
+      <Row>
+        {movies.map((movie) => (
+          <Col
+            key={movie._id}
+            md={4}
+            sm={6}
+            xs={12}
+            className="d-flex align-items-stretch mb-4"
+          >
+            <MovieCard movie={movie} onMovieClick={setSelectedMovie} />
+          </Col>
+        ))}
+      </Row>
+    </Container>
   );
 };
