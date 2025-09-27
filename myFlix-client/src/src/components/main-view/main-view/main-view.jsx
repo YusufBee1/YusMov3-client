@@ -1,50 +1,81 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Button } from "react-bootstrap";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { Container, Row, Col } from "react-bootstrap";
+
 import { MovieCard } from "../movie-card/movie-card";
 import { MovieView } from "../movie-view/movie-view";
+import { LoginView } from "../login-view/login-view";
+import { SignupView } from "../signup-view/signup-view";
+import { NavigationBar } from "../navigation-bar/navigation-bar";
 
 export const MainView = () => {
   const [movies, setMovies] = useState([]);
-  const [selectedMovie, setSelectedMovie] = useState(null);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
+    const storedUser = localStorage.getItem("user");
+    const storedToken = localStorage.getItem("token");
 
-    fetch("https://your-api-url.com/movies", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then((res) => res.json())
-      .then((data) => setMovies(data))
-      .catch((err) => console.error("Error fetching movies:", err));
+    if (storedUser && storedToken) {
+      setUser(JSON.parse(storedUser));
+      fetch("https://boiling-beach-61559.herokuapp.com/movies", {
+        headers: { Authorization: `Bearer ${storedToken}` }
+      })
+        .then((res) => res.json())
+        .then((data) => setMovies(data))
+        .catch((err) => console.error("Failed to fetch movies:", err));
+    }
   }, []);
 
-  if (selectedMovie) {
-    return (
-      <Container className="mt-4">
-        <MovieView
-          movie={selectedMovie}
-          onBackClick={() => setSelectedMovie(null)}
-        />
-      </Container>
-    );
-  }
+  const handleLoggedOut = () => {
+    setUser(null);
+    localStorage.clear();
+  };
 
   return (
-    <Container className="mt-4">
-      <Row>
-        {movies.map((movie) => (
-          <Col
-            key={movie._id}
-            md={4}
-            sm={6}
-            xs={12}
-            className="d-flex align-items-stretch mb-4"
-          >
-            <MovieCard movie={movie} onMovieClick={setSelectedMovie} />
-          </Col>
-        ))}
-      </Row>
+    <Container>
+      <NavigationBar user={user} onLoggedOut={handleLoggedOut} />
+
+      <Routes>
+        <Route
+          path="/signup"
+          element={
+            user ? <Navigate to="/" /> : <SignupView onLoggedIn={setUser} />
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            user ? <Navigate to="/" /> : <LoginView onLoggedIn={setUser} />
+          }
+        />
+        <Route
+          path="/movies/:movieId"
+          element={
+            !user ? (
+              <Navigate to="/login" />
+            ) : (
+              <MovieView movies={movies} />
+            )
+          }
+        />
+        <Route
+          path="/"
+          element={
+            !user ? (
+              <Navigate to="/login" />
+            ) : (
+              <Row>
+                {movies.map((movie) => (
+                  <Col md={4} key={movie._id} className="mb-4">
+                    <MovieCard movie={movie} />
+                  </Col>
+                ))}
+              </Row>
+            )
+          }
+        />
+      </Routes>
     </Container>
   );
 };
