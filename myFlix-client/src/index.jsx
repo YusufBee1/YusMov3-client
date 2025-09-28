@@ -1,11 +1,18 @@
 import React from "react";
-import { createRoot } from "react-dom/client";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
 import { MainView } from "./components/main-view/main-view";
+
+import "bootstrap/dist/css/bootstrap.min.css";
 import "./index.scss";
 
-// Root container (matches <div id="root"></div> in index.html)
-const container = document.getElementById("root");
-const root = createRoot(container);
+const App = () => (
+  <BrowserRouter>
+    <MainView />
+  </BrowserRouter>
+);
 
-// Render MainView inside the root
-root.render(<MainView />);
+const container = document.getElementById("root");
+const root = ReactDOM.createRoot(container);
+
+root.render(<App />);
