@@ -1,0 +1,15 @@
+[build]
+  # This matches the folder name in your screenshot
+  base = "myFlix-client"
+  
+  # Parcel always outputs to 'dist'
+  publish = "dist"
+  
+  # Standard build command
+  command = "npm run build"
+
+# This fixes the "Page Not Found" errors
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
