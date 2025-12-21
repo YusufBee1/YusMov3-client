@@ -1,30 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MovieCard } from "../movie-card/movie-card";
 import { MovieView } from "../movie-view/movie-view";
+import { ProfileView } from "../profile-view/profile-view";
 
 export const MainView = () => {
-  const [movies] = useState([
-    {
-      id: 1,
-      title: "The Crow (1994)",
-      description:
-        "A gothic rock musician returns from the dead to avenge his and his fiancée’s murder.",
-    },
-    {
-      id: 2,
-      title: "Beetlejuice (1988)",
-      description:
-        "A recently deceased couple hires a mischievous bio-exorcist to scare away new homeowners.",
-    },
-    {
-      id: 3,
-      title: "Interview with the Vampire (1994)",
-      description:
-        "A gothic tale of love, immortality, and despair as told by a centuries-old vampire.",
-    },
-  ]);
-
+  const [movies, setMovies] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
+
+  // Connect to your Real API
+  useEffect(() => {
+    fetch("https://boiling-beach-61559.herokuapp.com/movies")
+      .then((response) => response.json())
+      .then((data) => {
+        // Map the API data to a format React expects
+        const moviesFromApi = data.map((doc) => {
+          return {
+            id: doc._id,
+            title: doc.Title,
+            image: doc.ImagePath,
+            description: doc.Description,
+            genre: doc.Genre ? doc.Genre.Name : "",
+            director: doc.Director ? doc.Director.Name : "",
+          };
+        });
+        setMovies(moviesFromApi);
+      })
+      .catch((err) => {
+        console.error("Error fetching movies:", err);
+      });
+  }, []);
 
   if (selectedMovie) {
     return (
@@ -35,9 +39,12 @@ export const MainView = () => {
     );
   }
 
+  if (movies.length === 0) {
+    return <div className="main-view">The list is empty! (Or loading...)</div>;
+  }
+
   return (
     <div className="main-view">
-      <h1>🎬 YusMov Goth Edition</h1>
       {movies.map((movie) => (
         <MovieCard
           key={movie.id}
