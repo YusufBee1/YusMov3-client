@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Form, Button, Container, Row, Col, Card } from "react-bootstrap";
-import { useNavigate } from "react-router-dom"; // FIXED: Use Router hook
+import { useNavigate } from "react-router-dom"; 
 
 export const SignupView = () => {
   const [username, setUsername] = useState("");
@@ -8,21 +8,27 @@ export const SignupView = () => {
   const [email, setEmail] = useState("");
   const [birthday, setBirthday] = useState("");
   
-  const navigate = useNavigate(); // Hook for navigation
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // FIXED: Correct Heroku URL and removed trailing numbers
+    const data = {
+      username: username,
+      password: password,
+      email: email,
+      birthday: birthday
+    };
+
     fetch("https://boiling-beach-61559.herokuapp.com/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ Username: username, Password: password, Email: email, Birthday: birthday })
+      body: JSON.stringify(data) // FIXED: Sending lowercase keys
     })
       .then((res) => {
         if (res.ok) {
             alert("Signup successful");
-            navigate("/login"); // Navigate to login on success
+            navigate("/login");
         } else {
             alert("Signup failed");
         }

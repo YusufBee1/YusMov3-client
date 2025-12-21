@@ -9,11 +9,15 @@ export const LoginView = ({ onLoggedIn }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // FIXED: Correct Heroku URL
+    const data = {
+      username: username,
+      password: password
+    };
+
     fetch("https://boiling-beach-61559.herokuapp.com/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ Username: username, Password: password }) // Note: API usually expects capitalized keys for login
+      body: JSON.stringify(data) // FIXED: Sending lowercase keys
     })
       .then((res) => res.json())
       .then((data) => {
