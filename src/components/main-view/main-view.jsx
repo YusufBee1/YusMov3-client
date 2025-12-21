@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Container, Row, Col, Form, Button } from "react-bootstrap";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom"; // CHANGED: HashRouter
+import { Container, Row, Col, Form } from "react-bootstrap";
 
 import { MovieCard } from "../movie-card/movie-card";
 import { MovieView } from "../movie-view/movie-view";
@@ -23,20 +23,19 @@ export const MainView = () => {
       setUser(JSON.parse(storedUser));
       setToken(storedToken);
       
-      // FIXED: Using Heroku URL
       fetch("https://boiling-beach-61559.herokuapp.com/movies", {
         headers: { Authorization: `Bearer ${storedToken}` }
       })
         .then((res) => res.json())
         .then((data) => {
-          // FIXED: Mapping API data (PascalCase) to Component view (lowercase)
+          // We map the API data to match your frontend lowercase expectations
           const moviesFromApi = data.map((doc) => ({
             _id: doc._id,
-            title: doc.Title,
-            imagePath: doc.ImagePath,
-            description: doc.Description,
-            genre: doc.Genre,
-            director: doc.Director,
+            title: doc.title, // Backend is now lowercase
+            imagePath: doc.imagePath, // Backend is now lowercase
+            description: doc.description,
+            genre: doc.genre,
+            director: doc.director,
           }));
           setMovies(moviesFromApi);
         })
@@ -55,7 +54,7 @@ export const MainView = () => {
   );
 
   return (
-    <BrowserRouter>
+    <HashRouter> {/* CHANGED: Swapped BrowserRouter for HashRouter */}
       <NavigationBar user={user} onLoggedOut={handleLoggedOut} />
       <Container>
         <Routes>
@@ -144,6 +143,6 @@ export const MainView = () => {
           />
         </Routes>
       </Container>
-    </BrowserRouter>
+    </HashRouter>
   );
 };
