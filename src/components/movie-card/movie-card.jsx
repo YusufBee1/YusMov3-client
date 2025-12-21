@@ -3,16 +3,13 @@ import PropTypes from "prop-types";
 import { Card, Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
-export const MovieCard = ({ movie, user, setUser }) => {
-  const token = localStorage.getItem("token");
+export const MovieCard = ({ movie, user, token, setUser }) => {
 
-  if (!user) return null;
-
-  const isFavorite = user?.favorites?.includes(movie._id);
+  const isFavorite = user.FavoriteMovies && user.FavoriteMovies.includes(movie._id);
 
   const addFavorite = () => {
     fetch(
-      `http://localhost:8080/users/${user.username}/movies/${movie._id}`,
+      `https://boiling-beach-61559.herokuapp.com/users/${user.Username}/movies/${movie._id}`,
       {
         method: "POST",
         headers: {
@@ -28,15 +25,19 @@ export const MovieCard = ({ movie, user, setUser }) => {
         return res.json();
       })
       .then((updatedUser) => {
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-        setUser(updatedUser);
+        // Update local storage and state with the new user object
+        if (updatedUser) {
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+            setUser(updatedUser);
+            alert("Added to favorites!");
+        }
       })
       .catch((err) => console.error("Add favorite failed:", err));
   };
 
   const removeFavorite = () => {
     fetch(
-      `http://localhost:8080/users/${user.username}/movies/${movie._id}`,
+      `https://boiling-beach-61559.herokuapp.com/users/${user.Username}/movies/${movie._id}`,
       {
         method: "DELETE",
         headers: {
@@ -52,20 +53,23 @@ export const MovieCard = ({ movie, user, setUser }) => {
         return res.json();
       })
       .then((updatedUser) => {
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-        setUser(updatedUser);
+        if (updatedUser) {
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+            setUser(updatedUser);
+            alert("Removed from favorites!");
+        }
       })
       .catch((err) => console.error("Remove favorite failed:", err));
   };
 
   return (
-    <Card>
+    <Card className="h-100">
       {movie.imagePath && (
-        <Card.Img variant="top" src={movie.imagePath} alt={`${movie.title} poster`} />
+        <Card.Img variant="top" src={movie.imagePath} alt={`${movie.title} poster`} style={{ height: "300px", objectFit: "cover" }} />
       )}
       <Card.Body>
         <Card.Title>{movie.title}</Card.Title>
-        <Card.Text>{movie.description}</Card.Text>
+        <Card.Text>{movie.description.substring(0, 100)}...</Card.Text>
 
         <Link to={`/movies/${movie._id}`}>
           <Button variant="primary" className="me-2">
@@ -75,11 +79,11 @@ export const MovieCard = ({ movie, user, setUser }) => {
 
         {!isFavorite ? (
           <Button variant="outline-success" size="sm" onClick={addFavorite}>
-            + Add to Favorites
+            + Fav
           </Button>
         ) : (
           <Button variant="outline-danger" size="sm" onClick={removeFavorite}>
-            – Remove from Favorites
+            - Fav
           </Button>
         )}
       </Card.Body>
@@ -96,4 +100,5 @@ MovieCard.propTypes = {
   }).isRequired,
   user: PropTypes.object,
   setUser: PropTypes.func,
+  token: PropTypes.string
 };

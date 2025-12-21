@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
-import { Container, Row, Col, Form } from "react-bootstrap";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Container, Row, Col, Form, Button } from "react-bootstrap";
 
 import { MovieCard } from "../movie-card/movie-card";
 import { MovieView } from "../movie-view/movie-view";
@@ -12,6 +12,7 @@ import { ProfileView } from "../profile-view/profile-view";
 export const MainView = () => {
   const [movies, setMovies] = useState([]);
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
@@ -20,17 +21,32 @@ export const MainView = () => {
 
     if (storedUser && storedToken) {
       setUser(JSON.parse(storedUser));
-      fetch("http://localhost:8080/movies", {
+      setToken(storedToken);
+      
+      // FIXED: Using Heroku URL
+      fetch("https://boiling-beach-61559.herokuapp.com/movies", {
         headers: { Authorization: `Bearer ${storedToken}` }
       })
         .then((res) => res.json())
-        .then((data) => setMovies(data))
+        .then((data) => {
+          // FIXED: Mapping API data (PascalCase) to Component view (lowercase)
+          const moviesFromApi = data.map((doc) => ({
+            _id: doc._id,
+            title: doc.Title,
+            imagePath: doc.ImagePath,
+            description: doc.Description,
+            genre: doc.Genre,
+            director: doc.Director,
+          }));
+          setMovies(moviesFromApi);
+        })
         .catch((err) => console.error("Failed to fetch movies:", err));
     }
   }, []);
 
   const handleLoggedOut = () => {
     setUser(null);
+    setToken(null);
     localStorage.clear();
   };
 
@@ -39,78 +55,95 @@ export const MainView = () => {
   );
 
   return (
-    <Container>
+    <BrowserRouter>
       <NavigationBar user={user} onLoggedOut={handleLoggedOut} />
-
-      <Routes>
-        <Route
-          path="/signup"
-          element={
-            user ? <Navigate to="/" /> : <SignupView onLoggedIn={setUser} />
-          }
-        />
-        <Route
-          path="/login"
-          element={
-            user ? <Navigate to="/" /> : <LoginView onLoggedIn={setUser} />
-          }
-        />
-        <Route
-          path="/movies/:movieId"
-          element={
-            !user ? (
-              <Navigate to="/login" />
-            ) : (
-              <MovieView movies={movies} />
-            )
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            !user ? (
-              <Navigate to="/login" />
-            ) : (
-              <ProfileView
-                user={user}
-                movies={movies}
-                onLoggedOut={handleLoggedOut}
-                setUser={setUser}
-              />
-            )
-          }
-        />
-        <Route
-          path="/"
-          element={
-            !user ? (
-              <Navigate to="/login" />
-            ) : (
-              <>
-                <Form className="mt-3 mb-4">
-                  <Form.Control
-                    type="text"
-                    placeholder="Search movies..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </Form>
-                <Row>
-                  {filteredMovies.map((movie) => (
-                    <Col md={4} key={movie._id} className="mb-4">
-                      <MovieCard
-                        movie={movie}
-                        user={user}
-                        setUser={setUser}
-                      />
+      <Container>
+        <Routes>
+          <Route
+            path="/signup"
+            element={
+              user ? <Navigate to="/" /> : <SignupView />
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              user ? <Navigate to="/" /> : <LoginView onLoggedIn={(user, token) => {
+                setUser(user);
+                setToken(token);
+              }} />
+            }
+          />
+          <Route
+            path="/movies/:movieId"
+            element={
+              !user ? (
+                <Navigate to="/login" replace />
+              ) : movies.length === 0 ? (
+                <Col>Loading...</Col>
+              ) : (
+                <MovieView movies={movies} />
+              )
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              !user ? (
+                <Navigate to="/login" replace />
+              ) : (
+                <ProfileView
+                  user={user}
+                  token={token}
+                  movies={movies}
+                  onLoggedOut={handleLoggedOut}
+                  setUser={setUser}
+                />
+              )
+            }
+          />
+          <Route
+            path="/"
+            element={
+              !user ? (
+                <Navigate to="/login" replace />
+              ) : (
+                <>
+                  <Row className="justify-content-center">
+                    <Col md={8}>
+                      <Form className="mt-3 mb-4">
+                        <Form.Control
+                          type="text"
+                          placeholder="Search movies..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                      </Form>
                     </Col>
-                  ))}
-                </Row>
-              </>
-            )
-          }
-        />
-      </Routes>
-    </Container>
+                  </Row>
+                  
+                  <Row>
+                    {movies.length === 0 ? (
+                      <Col>The list is empty!</Col>
+                    ) : (
+                      filteredMovies.map((movie) => (
+                        <Col md={3} key={movie._id} className="mb-4">
+                          <MovieCard
+                            movie={movie}
+                            user={user}
+                            token={token}
+                            setUser={setUser}
+                          />
+                        </Col>
+                      ))
+                    )}
+                  </Row>
+                </>
+              )
+            }
+          />
+        </Routes>
+      </Container>
+    </BrowserRouter>
   );
 };

@@ -9,10 +9,11 @@ export const LoginView = ({ onLoggedIn }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    fetch("https://your-api-url/login", {
+    // FIXED: Correct Heroku URL
+    fetch("https://boiling-beach-61559.herokuapp.com/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password })
+      body: JSON.stringify({ Username: username, Password: password }) // Note: API usually expects capitalized keys for login
     })
       .then((res) => res.json())
       .then((data) => {
@@ -20,6 +21,8 @@ export const LoginView = ({ onLoggedIn }) => {
           localStorage.setItem("token", data.token);
           localStorage.setItem("user", JSON.stringify(data.user));
           onLoggedIn(data.user, data.token);
+        } else {
+            alert("No such user");
         }
       })
       .catch((err) => console.error("Login failed:", err));

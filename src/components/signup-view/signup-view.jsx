@@ -1,32 +1,34 @@
 import React, { useState } from "react";
-import PropTypes from "prop-types";
 import { Form, Button, Container, Row, Col, Card } from "react-bootstrap";
+import { useNavigate } from "react-router-dom"; // FIXED: Use Router hook
 
-export const SignupView = ({ onBackClick }) => {
+export const SignupView = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [birthday, setBirthday] = useState("");
+  
+  const navigate = useNavigate(); // Hook for navigation
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    fetch("https://boiling-beach-61559-98f808484350.herokuapp.com/users", {
+    // FIXED: Correct Heroku URL and removed trailing numbers
+    fetch("https://boiling-beach-61559.herokuapp.com/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password, email, birthday })
+      body: JSON.stringify({ Username: username, Password: password, Email: email, Birthday: birthday })
     })
       .then((res) => {
-        if (!res.ok) throw new Error("Signup failed");
-        return res.json();
-      })
-      .then((data) => {
-        alert("Signup successful, please login!");
-        onBackClick();
+        if (res.ok) {
+            alert("Signup successful");
+            navigate("/login"); // Navigate to login on success
+        } else {
+            alert("Signup failed");
+        }
       })
       .catch((err) => {
         console.error("Signup error:", err);
-        alert("Signup failed.");
       });
   };
 
@@ -79,18 +81,10 @@ export const SignupView = ({ onBackClick }) => {
               <Button type="submit" variant="success" className="w-100 mb-2">
                 Sign Up
               </Button>
-
-              <Button variant="secondary" onClick={onBackClick} className="w-100">
-                Back to Login
-              </Button>
             </Form>
           </Card>
         </Col>
       </Row>
     </Container>
   );
-};
-
-SignupView.propTypes = {
-  onBackClick: PropTypes.func.isRequired
 };

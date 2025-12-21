@@ -1,50 +1,60 @@
 import React, { useEffect, useState } from "react";
-import { Container, Row, Col, Form, Button, Card } from "react-bootstrap";
+import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import { MovieCard } from "../movie-card/movie-card";
 
-export const ProfileView = ({ user, movies, onLoggedOut, setUser }) => {
-  const [updatedUser, setUpdatedUser] = useState(user);
+export const ProfileView = ({ user, token, movies, onLoggedOut, setUser }) => {
+  const [username, setUsername] = useState(user.Username);
+  const [email, setEmail] = useState(user.Email);
+  const [birthday, setBirthday] = useState(user.Birthday ? user.Birthday.split("T")[0] : "");
+  const [password, setPassword] = useState("");
 
-  useEffect(() => {
-    setUpdatedUser(user);
-  }, [user]);
-
-  if (!user) return null;
-
+  // Filter movies to find favorites
   const favoriteMovies = movies.filter((m) =>
-    user.favorites.includes(m._id)
+    user.FavoriteMovies && user.FavoriteMovies.includes(m._id)
   );
 
   const handleUpdate = (e) => {
     e.preventDefault();
 
+    const data = {
+        Username: username,
+        Email: email,
+        Birthday: birthday
+    };
+    if (password) data.Password = password;
+
     fetch(
-      `https://boiling-beach-61559.herokuapp.com/users/${user.username}`,
+      `https://boiling-beach-61559.herokuapp.com/users/${user.Username}`,
       {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(updatedUser),
+        body: JSON.stringify(data),
       }
     )
-      .then((res) => res.json())
+      .then((res) => {
+          if (res.ok) return res.json();
+          alert("Update failed");
+      })
       .then((data) => {
-        alert("Profile updated!");
-        localStorage.setItem("user", JSON.stringify(data));
-        setUser(data);
+        if(data) {
+            alert("Profile updated!");
+            localStorage.setItem("user", JSON.stringify(data));
+            setUser(data);
+        }
       })
       .catch((err) => console.error("Update failed:", err));
   };
 
   const handleDelete = () => {
     fetch(
-      `https://boiling-beach-61559.herokuapp.com/users/${user.username}`,
+      `https://boiling-beach-61559.herokuapp.com/users/${user.Username}`,
       {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
       }
     )
@@ -65,10 +75,8 @@ export const ProfileView = ({ user, movies, onLoggedOut, setUser }) => {
               <Form.Label>Username</Form.Label>
               <Form.Control
                 type="text"
-                value={updatedUser.username || ""}
-                onChange={(e) =>
-                  setUpdatedUser({ ...updatedUser, username: e.target.value })
-                }
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 required
               />
             </Form.Group>
@@ -76,10 +84,8 @@ export const ProfileView = ({ user, movies, onLoggedOut, setUser }) => {
               <Form.Label>Email</Form.Label>
               <Form.Control
                 type="email"
-                value={updatedUser.email || ""}
-                onChange={(e) =>
-                  setUpdatedUser({ ...updatedUser, email: e.target.value })
-                }
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </Form.Group>
@@ -87,24 +93,16 @@ export const ProfileView = ({ user, movies, onLoggedOut, setUser }) => {
               <Form.Label>Password</Form.Label>
               <Form.Control
                 type="password"
-                placeholder="Enter new password"
-                onChange={(e) =>
-                  setUpdatedUser({ ...updatedUser, password: e.target.value })
-                }
+                placeholder="Enter new password (optional)"
+                onChange={(e) => setPassword(e.target.value)}
               />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Birthday</Form.Label>
               <Form.Control
                 type="date"
-                value={
-                  updatedUser.birthday
-                    ? updatedUser.birthday.split("T")[0]
-                    : ""
-                }
-                onChange={(e) =>
-                  setUpdatedUser({ ...updatedUser, birthday: e.target.value })
-                }
+                value={birthday}
+                onChange={(e) => setBirthday(e.target.value)}
               />
             </Form.Group>
             <Button variant="primary" type="submit">
@@ -120,19 +118,19 @@ export const ProfileView = ({ user, movies, onLoggedOut, setUser }) => {
           </Form>
         </Col>
 
-        <Col md={6}>
+        <Col md={12} className="mt-5">
           <h3>Favorite Movies</h3>
-          {favoriteMovies.length === 0 ? (
-            <p>No favorites yet.</p>
-          ) : (
-            <Row>
-              {favoriteMovies.map((movie) => (
-                <Col md={6} key={movie._id} className="mb-4">
-                  <MovieCard movie={movie} />
-                </Col>
-              ))}
-            </Row>
-          )}
+          <Row>
+             {favoriteMovies.length === 0 ? (
+                <p>No favorites yet.</p>
+              ) : (
+                  favoriteMovies.map((movie) => (
+                    <Col md={3} key={movie._id} className="mb-4">
+                      <MovieCard movie={movie} user={user} token={token} setUser={setUser} />
+                    </Col>
+                  ))
+              )}
+          </Row>
         </Col>
       </Row>
     </Container>
