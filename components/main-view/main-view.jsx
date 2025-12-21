@@ -1,28 +1,34 @@
 import React, { useState, useEffect } from "react";
 import { MovieCard } from "../movie-card/movie-card";
 import { MovieView } from "../movie-view/movie-view";
-import { ProfileView } from "../profile-view/profile-view";
+
+// DEFINE PROFILE VIEW RIGHT HERE (No import needed)
+const ProfileView = ({ onBackClick }) => {
+  return (
+    <div>
+      <h1>Profile View</h1>
+      <button onClick={onBackClick}>Back</button>
+    </div>
+  );
+};
 
 export const MainView = () => {
   const [movies, setMovies] = useState([]);
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const [showProfile, setShowProfile] = useState(false);
 
-  // Connect to your Real API
   useEffect(() => {
     fetch("https://boiling-beach-61559.herokuapp.com/movies")
       .then((response) => response.json())
       .then((data) => {
-        // Map the API data to a format React expects
-        const moviesFromApi = data.map((doc) => {
-          return {
-            id: doc._id,
-            title: doc.Title,
-            image: doc.ImagePath,
-            description: doc.Description,
-            genre: doc.Genre ? doc.Genre.Name : "",
-            director: doc.Director ? doc.Director.Name : "",
-          };
-        });
+        const moviesFromApi = data.map((doc) => ({
+          id: doc._id,
+          title: doc.Title,
+          image: doc.ImagePath,
+          description: doc.Description,
+          genre: doc.Genre ? doc.Genre.Name : "",
+          director: doc.Director ? doc.Director.Name : "",
+        }));
         setMovies(moviesFromApi);
       })
       .catch((err) => {
@@ -39,12 +45,17 @@ export const MainView = () => {
     );
   }
 
+  if (showProfile) {
+    return <ProfileView onBackClick={() => setShowProfile(false)} />;
+  }
+
   if (movies.length === 0) {
-    return <div className="main-view">The list is empty! (Or loading...)</div>;
+    return <div className="main-view">Loading movies...</div>;
   }
 
   return (
     <div className="main-view">
+      <button onClick={() => setShowProfile(true)}>Profile</button>
       {movies.map((movie) => (
         <MovieCard
           key={movie.id}
