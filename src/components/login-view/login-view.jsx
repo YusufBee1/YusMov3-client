@@ -14,10 +14,11 @@ export const LoginView = ({ onLoggedIn }) => {
       password: password
     };
 
-    fetch("https://boiling-beach-61559.herokuapp.com/login", {
+    // FIXED: Using the long URL to prevent Redirect/CORS errors
+    fetch("https://boiling-beach-61559-37f098e7713a.herokuapp.com/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data) // FIXED: Sending lowercase keys
+      body: JSON.stringify(data)
     })
       .then((res) => res.json())
       .then((data) => {

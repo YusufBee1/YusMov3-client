@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { HashRouter, Routes, Route, Navigate } from "react-router-dom"; // CHANGED: HashRouter
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom"; 
 import { Container, Row, Col, Form } from "react-bootstrap";
 
 import { MovieCard } from "../movie-card/movie-card";
@@ -23,16 +23,16 @@ export const MainView = () => {
       setUser(JSON.parse(storedUser));
       setToken(storedToken);
       
-      fetch("https://boiling-beach-61559.herokuapp.com/movies", {
+      // FIXED: Using the long URL to prevent Redirect/CORS errors
+      fetch("https://boiling-beach-61559-37f098e7713a.herokuapp.com/movies", {
         headers: { Authorization: `Bearer ${storedToken}` }
       })
         .then((res) => res.json())
         .then((data) => {
-          // We map the API data to match your frontend lowercase expectations
           const moviesFromApi = data.map((doc) => ({
             _id: doc._id,
-            title: doc.title, // Backend is now lowercase
-            imagePath: doc.imagePath, // Backend is now lowercase
+            title: doc.title,
+            imagePath: doc.imagePath,
             description: doc.description,
             genre: doc.genre,
             director: doc.director,
@@ -54,7 +54,7 @@ export const MainView = () => {
   );
 
   return (
-    <HashRouter> {/* CHANGED: Swapped BrowserRouter for HashRouter */}
+    <HashRouter>
       <NavigationBar user={user} onLoggedOut={handleLoggedOut} />
       <Container>
         <Routes>
